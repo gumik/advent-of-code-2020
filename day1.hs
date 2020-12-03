@@ -8,7 +8,7 @@ main = do
     let splitted = lines contents
         numbers = map read splitted :: [Int]
         (num1, num2) = solve numbers
-    putStrLn $ show numbers
+    print numbers
     printf "%d * %d = %d\n" num1 num2 (num1*num2)
 
 --------------------------------------------------------------------------------
