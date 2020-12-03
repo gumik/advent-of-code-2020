@@ -1,6 +1,3 @@
-import Data.List
-import Data.List.Extra
-import qualified Data.Text as T
 import Text.Printf
 
 --------------------------------------------------------------------------------
@@ -15,5 +12,5 @@ main = do
 --------------------------------------------------------------------------------
 
 solve lines stepsRight stepsDown = length $ filter (== '#') points where
-    points = zipWith (!!) (map (concat . repeat) lines') [0,stepsRight..]
+    points = zipWith (!!) (map cycle lines') [0,stepsRight..]
     lines' = map (lines !!) [0,stepsDown .. length lines - 1]
