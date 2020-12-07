@@ -11,9 +11,8 @@ main = do
     print $ solve input
     print $ solve' input
 
-parse = map makeMap . map splitDocument . splitDocuments where
+parse = map makeMap . map words . splitDocuments where
     makeMap = M.map (drop 1) . fromList . map (break (== ':'))
-    splitDocument = filter (/= "") . splitOn " " . replace "\n" " "
     splitDocuments = splitOn "\n\n"
 
 solve = length . documentsWithRequiredFields
