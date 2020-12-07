@@ -14,4 +14,4 @@ uniqueAnswers = nub . concat
 
 solve = sum . map (length . uniqueAnswers)
 solve' = sum . map countForGroup where
-    countForGroup group = length $ filter id $ map (\x -> all (x `elem`) group) $ uniqueAnswers group
+    countForGroup group = length $ filter (\x -> all (x `elem`) group) $ uniqueAnswers group
