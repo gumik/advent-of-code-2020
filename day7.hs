@@ -7,6 +7,7 @@ main = do
     contents <- getContents
     let input = parse contents
     print $ solve input
+    print $ solve' input
 
 parse = map parseLine . lines where
     parseLine line = (bag, parseContains containsStr) where
@@ -18,7 +19,13 @@ parse = map parseLine . lines where
 
 solve input = length nodesReachedFromShinyGold - 1 where
     nodesReachedFromShinyGold = nub $ concat $ takeWhile (/= []) $ iterate nextNodes ["shiny gold"]
-    nextNodes nodes = concatMap (graphMap !) (nodes \\ leaves) where
-        leaves = filter (not . (`member` graphMap)) nodes
+    nextNodes nodes = concatMap (graphMap !) leafs where
+        leafs = filter (`member` graphMap) nodes
     graphMap = M.fromListWith (++) $ concatMap rev input
     rev (bag, contain) = map (\(n, x) -> (x, [bag])) contain
+
+solve' input = bagsCount "shiny gold" - 1 where
+    bagsCount node = 1 + sum (map countForSingle children) where
+        children = graphMap ! node
+        countForSingle (n, child) = n * bagsCount child
+    graphMap = M.fromListWith (++) input
