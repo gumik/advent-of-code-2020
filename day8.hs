@@ -1,23 +1,47 @@
 import Text.Printf
+import Data.List
 
 main = do
     contents <- getContents
     let input = parse contents
     print $ solve input
+    print $ solve' input
 
-parse = map (\[cmd, n] -> (cmd, readInt n)) . map words . lines
+parse = map ((\[cmd, n] -> (cmd, readInt n)) . words) . lines
 readInt str = read $ filter (/= '+') str :: Int
 
--- This is soooo UGLY and OVERCOMPLICATED! Needs to be reworked.
-solve input = getAccumulator $ head $ drop (length steps -1 ) steps where
-    steps = takeWhile (\(_, (_, _, count), _, _) -> count >= 0) $ iterate step ([], head inputWithCounts, tail inputWithCounts, 0)
-    addCount (cmd, n) = (cmd, n, 0)
-    inputWithCounts = map addCount input
-    step (_, (_, _, 1), _, accumulator) = ([], ("", 0, -1), [], accumulator)
-    step (prev, (cmd, n, count), next, accumulator) = case cmd of
-        "nop" -> (prev ++ [(cmd, n, count+1)], head next, tail next, accumulator)
-        "acc" -> (prev ++ [(cmd, n, count+1)], head next, tail next, accumulator+n)
-        "jmp" -> if n > 0
-            then (prev ++ [(cmd, n, count+1)] ++ take (n-1) next, head $ drop (n-1) next, drop (n) next, accumulator)
-            else (take (length prev + n) prev, head $ drop (length prev + n) prev, drop (length prev + n + 1) prev ++ [(cmd, n, count+1)] ++ next, accumulator)
-    getAccumulator (_, (_, _, _), _, accumulator) = accumulator
+data State = State { position :: Int
+                   , accumulator :: Int
+                   , passedPositions :: [Int] }
+           | Finished
+    deriving (Show)
+isFinished state = case state of
+    Finished -> True
+    _ -> False
+
+solve input = accumulator $ last steps where
+    steps = takeWhile noDuplicates $ runCode input
+    noDuplicates state = length (nub pos) == length pos where
+        pos = passedPositions state
+
+solve' input = accumulator $ last $ takeWhile (not . isFinished) finishedComputation where
+    finishedComputation = head $ filter (isFinished . last) $ map (take (length input) . runCode) possibleFixes
+    possibleFixes = map changeInstruction jmpOrNopPositions  -- brute force :)
+    jmpOrNopPositions = map fst $ filter ((`elem` ["jmp", "nop"]) . fst . snd) $ zip [0,1..] input
+    changeInstruction pos = part1 ++ ((newCmd, n):part2) where
+        (part1, (cmd, n):part2) = splitAt pos input
+        newCmd = case cmd of
+            "nop" -> "jmp"
+            "jmp" -> "nop"
+
+runCode input = iterate (step input) $ State 0 0 [] where
+    step _ Finished = Finished
+    step input state = if pos >= length input
+        then Finished
+        else case cmd of
+            "nop" -> state { passedPositions = pos:passed, position = pos + 1 }
+            "acc" -> state { passedPositions = pos:passed, position = pos + 1, accumulator = acc + val }
+            "jmp" -> state { passedPositions = pos:passed, position = pos + val }
+          where
+            State pos acc passed = state
+            (cmd, val) = input !! pos
