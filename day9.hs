@@ -20,10 +20,9 @@ solve1 input = solve1' $ splitAt 25 input where
         x:xs -> (n - x) `elem` xs || isSum xs n
 
 solve2 input n = solve2' [head input] (tail input) where
-    solve2' part1 part2 = if sum part1 < n
-        then solve2' (part1 ++ [head part2]) (tail part2)
-        else if sum part1 > n
-            then if length part1 == 1
-                then solve2' [head part2] (tail part2)
-                else solve2' (tail part1) part2
-            else minimum part1 + maximum part1
+    solve2' part1 part2
+        | sum part1 < n = solve2' (part1 ++ [head part2]) (tail part2)
+        | sum part1 > n = if length part1 == 1
+                          then solve2' [head part2] (tail part2)
+                          else solve2' (tail part1) part2
+        | otherwise = minimum part1 + maximum part1
