@@ -22,7 +22,7 @@ move (cmd,value) (x, y) = case cmd of
     'E' -> (x + value, y)
     'W' -> (x - value, y)
 
-rotate dir cmd value = (dropWhile (/= dir) (cycle dirs)) !! n where
+rotate dir cmd value = dropWhile (/= dir) (cycle dirs) !! n where
     n = 4 + m * (value `div` 90)
     m = if cmd == 'R' then 1 else -1
 
@@ -37,7 +37,7 @@ solve' = getDist . foldl step ((0, 0), (10, -1)) where
         | cmd == 'F' = (moveToWaypoint pos waypoint value, waypoint) --
         | otherwise = ((x, y), rotateWaypoint waypoint cmd value)
 
-rotateWaypoint waypoint cmd value = (iterate rotation waypoint) !! (value `div` 90) where
+rotateWaypoint waypoint cmd value = iterate rotation waypoint !! (value `div` 90) where
     rotation = case cmd of
         'R' -> rotateRight
         'L' -> rotateLeft

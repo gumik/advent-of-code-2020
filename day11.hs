@@ -10,7 +10,7 @@ main = do
 data Place = FreeSeat | TakenSeat | Floor | Boundary deriving(Show, Eq)
 readPlace c = case c of
   'L' -> FreeSeat
-  '#' -> TakenSeat  
+  '#' -> TakenSeat
   '.' -> Floor
 
 parse :: String -> Array (Int, Int) Place
@@ -28,8 +28,8 @@ solve change arr = length $ filter (== TakenSeat) $ elems $ steps arr where
       where
         newArr = step arr
     (rows, cols) = snd $ bounds arr
-    step arr = arr // [((y, x), change arr y x) | y <- [1..rows-1], x <- [1..cols-1]] where
-    
+    step arr = arr // [((y, x), change arr y x) | y <- [1..rows-1], x <- [1..cols-1]]
+
 -- These two may have a lot of common code.
 change arr y x = case place of
     TakenSeat -> if occupied >= 4 then FreeSeat else TakenSeat
@@ -37,7 +37,7 @@ change arr y x = case place of
     Floor -> Floor
   where
     place = arr ! (y, x)
-    occupied = length $ filter (== TakenSeat) $ map (arr !) [(y', x') | y' <- [y-1 .. y+1], x' <- [x-1 .. x+1], (y', x') /= (y, x)]
+    occupied = length $ filter (== TakenSeat) $ [arr ! (y', x') | y' <- [y-1 .. y+1], x' <- [x-1 .. x+1], (y', x') /= (y, x)]
 
 change' arr y x = case place of
     TakenSeat -> if occupied >= 5 then FreeSeat else TakenSeat
