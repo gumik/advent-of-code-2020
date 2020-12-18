@@ -19,16 +19,16 @@ parse input = Input rules yourTicket nearbyTickets where
     nearbyTickets = map parseTicket $ drop 1 $ lines nearbyTicketsStr
 
 parseRule rulesStr = (name, [(a, b), (c, d)]) where
-    [a, b, c, d] = map read $ concat $ map (splitOn "-") $ splitOn " or "rangesStr :: [Int]
+    [a, b, c, d] = map read $ concatMap (splitOn "-") $ splitOn " or "rangesStr :: [Int]
     [name, rangesStr] = splitOn ": " rulesStr
 
 parseTicket s = map read $ splitOn "," s :: [Int]
 
 solve (Input rules _ nearbyTickets) = sum $ filter (not . validForAnyRule rules) (concat nearbyTickets)
 
-validForAnyRange ranges n = any (\(a, b) -> a <= n && n <= b) ranges where
+validForAnyRange ranges n = any (\(a, b) -> a <= n && n <= b) ranges
 
-validForAnyRule rules n = validForAnyRange (concat $ map snd rules) n
+validForAnyRule rules = validForAnyRange (concatMap snd rules)
 
 solve' (Input rules yourTicket nearbyTickets) = product $ map (yourTicket !!) departureIndexes where
     departureIndexes = map fst $ filter (isPrefixOf "departure" . snd) ([0..] `zip` columnsNames)
@@ -37,7 +37,7 @@ solve' (Input rules yourTicket nearbyTickets) = product $ map (yourTicket !!) de
     columns = transpose validTickets
     validTickets = filter (validTicket rules) nearbyTickets
 
-validTicket rules ticket = all (validForAnyRule rules) ticket
+validTicket rules = all (validForAnyRule rules)
 
 validRules rules nums =  map fst $ filter (\(name, ranges) -> validRuleForAllNums ranges) rules where
     validRuleForAllNums ranges = all (validForAnyRange ranges) nums
