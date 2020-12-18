@@ -1,14 +1,35 @@
+import Data.Map (fromListWith, toList)
+import Data.List (sort)
 
 main = do
     cont <- getContents
     let input = parse cont
     print $ solve input
-    
-parse = concat . map parseLine . zip [0..] . lines
-parseLine (y, line) = map ((,) y . fst) $ filter ((=='#') . snd) $ [0..] `zip` line
+    print $ solve' input
 
-solve :: [(Int, Int)] -> [(Int, Int)]
-solve input = step input
-step input = neighbours where
+parse = concat . map parseLine . zip [0..] . lines
+parseLine (y, line) = map ((,,) 0 y . fst) $ filter ((=='#') . snd) $ [0..] `zip` line
+
+solve input = length $ iterate step input !! 6
+step input = map fst $ filter isActive neighboursCounts where
+    neighboursCounts = toList $ fromListWith (+) (neighbours `zip` [1,1..])
     neighbours = concat $ map getNeighbours input
-getNeighbours (x, y) = [(x', y') | x' <- [x-1..x+1], y' <- [y-1..y+1], (x', y') /= (x, y)]
+    isActive (point, count) = (point `elem` input && count `elem` [2,3])
+                            || (not (point `elem` input) && count == 3)
+getNeighbours (x, y, z) = [(x', y', z') | x' <- [x-1..x+1]
+                                        , y' <- [y-1..y+1]
+                                        , z' <- [z-1..z+1]
+                                        , (x', y', z') /= (x, y, z)]
+
+-- This may be done as generalized function for n-dimensional space
+solve' input = length $ iterate step' (map (\(x, y, z) -> (x, y, z, 0)) input) !! 6
+step' input = map fst $ filter isActive neighboursCounts where
+    neighboursCounts = toList $ fromListWith (+) (neighbours `zip` [1,1..])
+    neighbours = concat $ map getNeighbours' input
+    isActive (point, count) = (point `elem` input && count `elem` [2,3])
+                            || (not (point `elem` input) && count == 3)
+getNeighbours' (x, y, z, w) = [(x', y', z', w') | x' <- [x-1..x+1]
+                                                , y' <- [y-1..y+1]
+                                                , z' <- [z-1..z+1]
+                                                , w' <- [w-1..w+1]
+                                                , (x', y', z', w') /= (x, y, z, w)]
