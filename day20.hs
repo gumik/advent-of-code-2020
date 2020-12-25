@@ -11,7 +11,6 @@ main = do
     print $ solve input
     print $ solve' input
     
-    
 parse = map parseTile . splitOn "\n\n"
 parseTile str = (num, tile) where
     num = read$ init $ drop 5 header :: Int
@@ -28,8 +27,7 @@ edges tile = regular ++ flipped where
     regular = [top tile, bottom tile, left tile, right tile]
 
 
-solve' input = monsters image where
-    image = reconstructImage input
+solve' = countNoMonster . putMonsters . monsters . reconstructImage
     
 reconstructImage input = concat $ map (transpose . concat . map (init . tail . transpose . init . tail . snd)) mergedTiles where
     mergedTiles = map (fillRow tiles edgesDct) $ firstColumn
@@ -83,6 +81,22 @@ matchBegin (m:ms) (c:rest)
     | m == ' '  =  matchBegin ms rest
     | c == m    =  matchBegin ms rest
     | otherwise =  False
+
+putMonsters (idxs, image) = zipWith (foldl (zipWith applyMask)) image monsterMasks where
+    monsterMasks = map (map idxStrToLine) $ extendLines idxs
+
+idxStrToLine (n, str) = (take n $ repeat ' ') ++ str ++ repeat ' '
+extendLines :: [[Int]] -> [[(Int, String)]]
+extendLines [] = []
+extendLines (idxs:rest) = let (x:xs) = extendLine idxs in x : (zipWith (++)  (xs ++ repeat []) $ extendLines rest)
+extendLine :: [Int] -> [[(Int, String)]]
+extendLine idxs = map (\m -> map (\idx -> (idx, m)) idxs) monster
+
+applyMask c m = case m of
+    ' ' -> c
+    '#' -> 'o'
+
+countNoMonster = length . filter (=='#') . concat
 
 monster = ["                  # "
           ,"#    ##    ##    ###"
